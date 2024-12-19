@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/cubedhuang/lipu-lili/internal/models"
 )
 
 func (app *App) handle() error {
@@ -39,16 +41,24 @@ func (app *App) index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type WordPage struct {
+	Word  models.WordData
+	Signs []models.SignData
+}
+
 func (app *App) word(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
-	word, ok := app.data.linkuData[id]
+	word, ok := app.data.linkuData.Words[id]
 	if !ok {
 		http.NotFound(w, r)
 		return
 	}
 
-	if err := app.tmpl.ExecuteTemplate(w, "word", word); err != nil {
+	if err := app.tmpl.ExecuteTemplate(w, "word", WordPage{
+		Word:  word,
+		Signs: app.data.signs[id],
+	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

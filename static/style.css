@@ -94,6 +94,11 @@ input[type="search"] {
 	& dd + dt {
 		margin-top: 0.25rem;
 	}
+
+	& video {
+		width: 12rem;
+		max-width: 100%;
+	}
 }
 
 small {

@@ -7,195 +7,313 @@
 				name="viewport"
 				content="width=device-width, initial-scale=1.0"
 			/>
-			<title>lipu nimi lili</title>
+			<title>{{ .Word.Word }} &ndash; lipu nimi lili</title>
 			<link rel="stylesheet" href="/static/reset.css" />
 			<link rel="stylesheet" href="/static/style.css" />
 			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
 		</head>
 
 		<body>
-			{{ $translation := .Translations.en }}
-			<h1>{{ .Word }}</h1>
+			<h1>{{ .Word.Word }}</h1>
 
 			<p class="intro">
 				<a href="/">home</a>
 			</p>
 
 			<div class="word-info">
-				<dl>
-					<dt>meaning</dt>
-					<dd>{{ $translation.Definition }}</dd>
+				{{ with .Word }}
+					{{ $translation := .Translations.en }}
+					<dl>
+						<dt>meaning</dt>
+						<dd>{{ $translation.Definition }}</dd>
 
-					{{ if len .SeeAlso | ne 0 }}
-						<dt>see also</dt>
-						<dd>
-							{{ range .SeeAlso }}
-								<a href="/{{ . }}">{{ . }}</a>
-							{{ end }}
-						</dd>
-					{{ end }}
-
-					{{ if .Resources | and (.Resources.SonaPona | or .Resources.LipamankaSemantic) }}
-						<dt>resources</dt>
-						{{ if .Resources.SonaPona }}
+						{{ if len .SeeAlso | ne 0 }}
+							<dt>see also</dt>
 							<dd>
-								<a
-									href="{{ .Resources.SonaPona }}"
-									target="_blank"
-									rel="noopener noreferrer"
-									>sona pona wiki</a
-								>
-							</dd>
-						{{ end }}
-						{{ if .Resources.LipamankaSemantic }}
-							<dd>
-								<a
-									href="{{ .Resources.LipamankaSemantic }}"
-									target="_blank"
-									rel="noopener noreferrer"
-									>lipamanka semantic space dictionary</a
-								>
-							</dd>
-						{{ end }}
-					{{ end }}
-
-					{{ if .KuData }}
-						<dt>ku translations</dt>
-						<dd>
-							{{ range $word, $count := .KuData }}
-								{{ $word }}<sup>{{ $count }}</sup>
-							{{ end }}
-						</dd>
-					{{ end }}
-
-					{{ if .PuVerbatim }}
-						<dt>pu verbatim</dt>
-						{{ range processPuData .PuVerbatim }}
-							<dd>
-								<small>{{ .PartOfSpeech }}</small>
-								{{ .Definition }}
-							</dd>
-						{{ end }}
-					{{ end }}
-				</dl>
-
-				<dl>
-					<dt>usage</dt>
-					<dd>
-						{{ .UsageCategory }} &middot;
-						{{ formatUsage .Usage }}
-					</dd>
-
-					<dt>book</dt>
-					<dd>{{ .Book }}</dd>
-					{{ if .CoinedEra }}
-						<dt>coined</dt>
-						<dd>
-							{{ .CoinedEra }}
-							{{ if .CoinedYear }}
-								&middot;
-								{{ .CoinedYear }}
-							{{ end }}
-						</dd>
-					{{ end }}
-					<dt>origin</dt>
-					{{ with processEtymologyData . }}
-						{{ if .Source }}
-							<dd>
-								<i>{{ .Source }}</i>
-							</dd>
-						{{ end }}
-
-						{{ range .Entries }}
-							<dd>
-								{{ .Language }}
-								{{ if .Word }}
-									&middot;
-									{{ .Word }}
-									{{ if .Alt }}
-										{{ .Alt }}
-									{{ end }}
-									{{ if .Definition | and (ne .Definition .Word) }}
-										&lsquo;{{ .Definition }}&rsquo;
-									{{ end }}
+								{{ range .SeeAlso }}
+									<a href="/{{ . }}">{{ . }}</a>
 								{{ end }}
 							</dd>
 						{{ end }}
-					{{ end }}
-					{{ if .Creator }}
-						<dd>
-							coined by
-							<i>
-								{{ join .Creator ", " }}
-							</i>
-						</dd>
-					{{ end }}
-					{{ if .AuthorVerbatim }}
-						<dt>author verbatim</dt>
-						<dd class="pre-wrap">
-							{{ .AuthorVerbatim }}
-						</dd>
-						{{ if .AuthorVerbatimSource }}
-							<dd>
-								<a
-									href="{{ .AuthorVerbatimSource }}"
-									target="_blank"
-									rel="noopener noreferrer"
-									>source</a
-								>
-							</dd>
-						{{ end }}
-					{{ end }}
-					{{ if $translation.Commentary }}
-						<dt>commentary</dt>
-						<dd class="pre-wrap">
-							{{ $translation.Commentary }}
-						</dd>
-					{{ end }}
-				</dl>
 
-				{{ if .Representations | and (.Representations.Ligatures | or .Representations.Ucsur) }}
-					<dl>
-						{{ if .Representations.Ligatures }}
-							<dt>sitelen pona</dt>
-							<dd class="pona big">
-								{{ join .Representations.Ligatures " " }}
-							</dd>
-							{{ if $translation.SpEtymology }}
+						{{ if .Resources | and (.Resources.SonaPona | or .Resources.LipamankaSemantic) }}
+							<dt>resources</dt>
+							{{ if .Resources.SonaPona }}
 								<dd>
-									{{ $translation.SpEtymology }}
+									<a
+										href="{{ .Resources.SonaPona }}"
+										target="_blank"
+										rel="noopener noreferrer"
+										>sona pona wiki</a
+									>
+								</dd>
+							{{ end }}
+							{{ if .Resources.LipamankaSemantic }}
+								<dd>
+									<a
+										href="{{ .Resources.LipamankaSemantic }}"
+										target="_blank"
+										rel="noopener noreferrer"
+										>lipamanka semantic space dictionary</a
+									>
 								</dd>
 							{{ end }}
 						{{ end }}
-						{{ if .Representations.SitelenSitelen }}
-							<dt>sitelen sitelen</dt>
+
+						{{ if .KuData }}
+							<dt>ku translations</dt>
 							<dd>
-								<img
-									src="https://nimi.li/api/ss?word={{ .Word }}"
-									alt="{{ .Word }} sitelen sitelen"
-									class="ss"
-								/>
+								{{ range $word, $count := .KuData }}
+									{{ $word }}<sup>{{ $count }}</sup>
+								{{ end }}
 							</dd>
 						{{ end }}
-						{{ if .Representations.SitelenJelo }}
-							<dt>sitelen jelo</dt>
-							<dd class="big">
-								{{ join .Representations.SitelenJelo "" }}
+
+						{{ if .PuVerbatim }}
+							<dt>pu verbatim</dt>
+							{{ range processPuData .PuVerbatim }}
+								<dd>
+									<small>{{ .PartOfSpeech }}</small>
+									{{ .Definition }}
+								</dd>
+							{{ end }}
+						{{ end }}
+
+						{{ if .Audio }}
+							<dt>audio</dt>
+							{{ range .Audio }}
+								<dd>
+									<audio id="{{ .Author }}">
+										<source src="{{ .Link }}" />
+										<a href="{{ .Link }}">view</a>
+									</audio>
+
+									<button
+										onclick="document.getElementById('{{ .Author }}').play()"
+										aria-label="play audio"
+									>
+										&#9205;
+									</button>
+
+									{{ .Author }}
+								</dd>
+							{{ end }}
+						{{ end }}
+					</dl>
+
+					<dl>
+						<dt>usage</dt>
+						<dd>
+							{{ .UsageCategory }} &middot;
+							{{ formatUsage .Usage }}
+						</dd>
+
+						<dt>book</dt>
+						<dd>{{ .Book }}</dd>
+						{{ if .CoinedEra }}
+							<dt>coined</dt>
+							<dd>
+								{{ .CoinedEra }}
+								{{ if .CoinedYear }}
+									&middot;
+									{{ .CoinedYear }}
+								{{ end }}
 							</dd>
 						{{ end }}
-						{{ if .Representations.SitelenEmosi }}
-							<dt>sitelen Emosi</dt>
-							<dd class="big">
-								{{ .Representations.SitelenEmosi }}
+						<dt>origin</dt>
+						{{ with processEtymologyData . }}
+							{{ if .Source }}
+								<dd>
+									<i>{{ .Source }}</i>
+								</dd>
+							{{ end }}
+
+							{{ range .Entries }}
+								<dd>
+									{{ .Language }}
+									{{ if .Word }}
+										&middot;
+										{{ .Word }}
+										{{ if .Alt }}
+											{{ .Alt }}
+										{{ end }}
+										{{ if .Definition | and (ne .Definition .Word) }}
+											&lsquo;{{ .Definition }}&rsquo;
+										{{ end }}
+									{{ end }}
+								</dd>
+							{{ end }}
+						{{ end }}
+						{{ if .Creator }}
+							<dd>
+								coined by
+								<i>
+									{{ join .Creator ", " }}
+								</i>
 							</dd>
 						{{ end }}
-						{{ if .Representations.Ucsur }}
-							<dt>ucsur</dt>
-							<dd class="big ucsur">
-								{{ fromCodePoint .Representations.Ucsur }}
+						{{ if .AuthorVerbatim }}
+							<dt>author verbatim</dt>
+							<dd class="pre-wrap">
+								{{ .AuthorVerbatim }}
+							</dd>
+							{{ if .AuthorVerbatimSource }}
+								<dd>
+									<a
+										href="{{ .AuthorVerbatimSource }}"
+										target="_blank"
+										rel="noopener noreferrer"
+										>source</a
+									>
+								</dd>
+							{{ end }}
+						{{ end }}
+						{{ if $translation.Commentary }}
+							<dt>commentary</dt>
+							<dd class="pre-wrap">
+								{{ $translation.Commentary }}
+							</dd>
+						{{ end }}
+					</dl>
+
+					{{ if .Representations | and (.Representations.Ligatures | or .Representations.Ucsur) }}
+						<dl>
+							{{ if .Representations.Ligatures }}
+								<dt>sitelen pona</dt>
+								<dd class="pona big">
+									{{ join .Representations.Ligatures " " }}
+								</dd>
+								{{ if $translation.SpEtymology }}
+									<dd>
+										{{ $translation.SpEtymology }}
+									</dd>
+								{{ end }}
+							{{ end }}
+							{{ if .Representations.SitelenSitelen }}
+								<dt>sitelen sitelen</dt>
+								<dd>
+									<img
+										src="https://nimi.li/api/ss?word={{ .Word }}"
+										alt="{{ .Word }} sitelen sitelen"
+										class="ss"
+									/>
+								</dd>
+							{{ end }}
+							{{ if .Representations.SitelenJelo }}
+								<dt>sitelen jelo</dt>
+								<dd class="big">
+									{{ join .Representations.SitelenJelo "" }}
+								</dd>
+							{{ end }}
+							{{ if .Representations.SitelenEmosi }}
+								<dt>sitelen Emosi</dt>
+								<dd class="big">
+									{{ .Representations.SitelenEmosi }}
+								</dd>
+							{{ end }}
+							{{ if .Representations.Ucsur }}
+								<dt>ucsur</dt>
+								<dd class="big ucsur">
+									{{ fromCodePoint .Representations.Ucsur }}
+								</dd>
+								<dd>
+									{{ .Representations.Ucsur }}
+								</dd>
+							{{ end }}
+						</dl>
+					{{ end }}
+				{{ end }}
+
+				{{ if .Signs }}
+					<dl>
+						<dt>luka pona</dt>
+						{{ with index .Signs 0 }}
+							<dd>
+								<video
+									src="{{ .Video.Mp4 }}"
+									autoplay
+									loop
+									muted
+									playsinline
+								>
+									<track kind="captions" />
+								</video>
 							</dd>
 							<dd>
-								{{ .Representations.Ucsur }}
+								{{ if .Video.Gif }}
+									<a
+										href="{{ .Video.Gif }}"
+										target="_blank"
+										rel="noopener noreferrer"
+										>gif</a
+									>
+								{{ end }}
+								<a
+									href="{{ .Video.Mp4 }}"
+									target="_blank"
+									rel="noopener noreferrer"
+									>mp4</a
+								>
+							</dd>
+						{{ end }}
+
+						{{ range .Signs }}
+							{{ $translation := .Translations.en }}
+							<dt>
+								{{ .NewGloss }}
+							</dt>
+							<dd>
+								{{ if .IsTwoHanded }}
+									two-handed
+								{{ else }}
+									one-handed
+								{{ end }}
+							</dd>
+							<dd>
+								<dl>
+									<dt>icons</dt>
+									<dd>
+										{{ $translation.Icons }}
+									</dd>
+									{{ if .Etymology }}
+										<dt>origin</dt>
+										{{ range .Etymology }}
+											<dd>
+												{{ .Language }}
+												{{ if .Sign }}
+													&middot;
+													{{ .Sign }}
+												{{ end }}
+											</dd>
+										{{ end }}
+									{{ end }}
+									{{ with $translation.Parameters }}
+										{{ if .Handshape }}
+											<dt>handshape</dt>
+											<dd>
+												{{ .Handshape }}
+											</dd>
+										{{ end }}
+										{{ if .Movement }}
+											<dt>movement</dt>
+											<dd>
+												{{ .Movement }}
+											</dd>
+										{{ end }}
+										{{ if .Placement }}
+											<dt>placement</dt>
+											<dd>
+												{{ .Placement }}
+											</dd>
+										{{ end }}
+										{{ if .Orientation }}
+											<dt>orientation</dt>
+											<dd>
+												{{ .Orientation }}
+											</dd>
+										{{ end }}
+									{{ end }}
+								</dl>
 							</dd>
 						{{ end }}
 					</dl>

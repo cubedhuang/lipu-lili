@@ -19,8 +19,9 @@ import (
 )
 
 type WordsStore struct {
-	linkuData models.LinkuData
+	linkuData *models.LinkuData
 	words     []models.WordData
+	signs     map[string][]models.SignData
 	mu        sync.RWMutex
 }
 
@@ -40,7 +41,7 @@ func New(config *Config) (*App, error) {
 			}
 			return fmt.Sprint(val, "%")
 		},
-		"processPuData": func(data models.PuVerbatim) []models.PuData {
+		"processPuData": func(data models.WordPuVerbatim) []models.PuData {
 			puData := make([]models.PuData, 0)
 
 			lines := strings.Split(data.En, "\n")
@@ -113,18 +114,39 @@ func (app *App) updateData() error {
 		return err
 	}
 
-	newWords := make([]models.WordData, 0, len(newData))
-	for _, word := range newData {
+	newWords := make([]models.WordData, 0, len(newData.Words))
+	for _, word := range newData.Words {
 		newWords = append(newWords, word)
 	}
 
 	slices.SortFunc(newWords, defaultSort)
+
+	newSigns := make(map[string][]models.SignData, len(newWords))
+	for _, word := range newWords {
+		for _, sign := range newData.Signs {
+			if sign.Definition != word.Id {
+				continue
+			}
+
+			_, ok := newSigns[word.Id]
+			if !ok {
+				newSigns[word.Id] = make([]models.SignData, 0)
+			}
+
+			newSigns[word.Id] = append(newSigns[word.Id], sign)
+		}
+
+		slices.SortFunc(newSigns[word.Id], func(a, b models.SignData) int {
+			return strings.Compare(a.Id, b.Id)
+		})
+	}
 
 	app.data.mu.Lock()
 	defer app.data.mu.Unlock()
 
 	app.data.linkuData = newData
 	app.data.words = newWords
+	app.data.signs = newSigns
 
 	return nil
 }
