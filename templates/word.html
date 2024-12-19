@@ -35,6 +35,30 @@
 						</dd>
 					{{ end }}
 
+					{{ if .Resources | and (.Resources.SonaPona | or .Resources.LipamankaSemantic) }}
+						<dt>resources</dt>
+						{{ if .Resources.SonaPona }}
+							<dd>
+								<a
+									href="{{ .Resources.SonaPona }}"
+									target="_blank"
+									rel="noopener noreferrer"
+									>sona pona wiki</a
+								>
+							</dd>
+						{{ end }}
+						{{ if .Resources.LipamankaSemantic }}
+							<dd>
+								<a
+									href="{{ .Resources.LipamankaSemantic }}"
+									target="_blank"
+									rel="noopener noreferrer"
+									>lipamanka semantic space dictionary</a
+								>
+							</dd>
+						{{ end }}
+					{{ end }}
+
 					{{ if .KuData }}
 						<dt>ku translations</dt>
 						<dd>
@@ -108,6 +132,9 @@
 					{{ end }}
 					{{ if .AuthorVerbatim }}
 						<dt>author verbatim</dt>
+						<dd class="pre-wrap">
+							{{ .AuthorVerbatim }}
+						</dd>
 						{{ if .AuthorVerbatimSource }}
 							<dd>
 								<a
@@ -118,9 +145,6 @@
 								>
 							</dd>
 						{{ end }}
-						<dd class="pre-wrap">
-							{{ .AuthorVerbatim }}
-						</dd>
 					{{ end }}
 					{{ if $translation.Commentary }}
 						<dt>commentary</dt>
