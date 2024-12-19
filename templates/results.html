@@ -1,33 +1,31 @@
-{{ define "results" -}}
-	<div id="results">
-		<div class="results">
-			{{ range . -}}
-				<article class="word">
-					<h2>
-						{{ .Word -}}
-					</h2>
-					<p class="meta">
-						{{ .UsageCategory -}} &middot;
-						{{ formatUsage .Usage -}}
+{{ define "results" }}
+	<article class="results">
+		{{ range . }}
+			<a href="/{{ .Id }}" class="word">
+				<h2>
+					{{ .Word }}
+				</h2>
+				<p class="meta">
+					{{ .UsageCategory }} &middot;
+					{{ formatUsage .Usage }}
+					&middot;
+					{{ .Book }}
+					{{ if .CoinedYear }}
 						&middot;
-						{{ .Book -}}
-						{{ if .CoinedYear -}}
-							&middot;
-							{{ .CoinedYear -}}
-						{{ end -}}
-					</p>
-					<p>
-						{{ .Translations.en.Definition -}}
-					</p>
-				</article>
-			{{- end -}}
-		</div>
+						{{ .CoinedYear }}
+					{{ end }}
+				</p>
+				<p>
+					{{ .Translations.en.Definition }}
+				</p>
+			</a>
+		{{ end }}
+	</article>
 
-		{{- if eq (len .) 0 -}}
-			<div class="no-results">
-				<p>nimi li lon ala wile sina a.</p>
-				<p>Your query didn't match any words!</p>
-			</div>
-		{{ end -}}
-	</div>
-{{ end -}}
+	{{ if eq (len .) 0 }}
+		<div class="no-results">
+			<p>nimi li lon ala wile sina a.</p>
+			<p>Your query didn't match any words!</p>
+		</div>
+	{{ end }}
+{{ end }}

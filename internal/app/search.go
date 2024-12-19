@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/cubedhuang/lipu-lili/internal/models"
@@ -15,16 +17,62 @@ func defaultSort(a, b models.WordData) int {
 	return strings.Compare(a.Word, b.Word)
 }
 
+type wordScore struct {
+	word  *models.WordData
+	score int
+}
+
 func (data *WordsStore) search(query string) []models.WordData {
 	data.mu.RLock()
 	defer data.mu.RUnlock()
 
-	results := make([]models.WordData, 0, len(data.words))
+	if query == "" {
+		return data.words
+	}
+
+	scores := make([]wordScore, 0, len(data.words))
+
 	for _, word := range data.words {
-		// if strings.Contains(word.Word, query) {
-		if fuzzy.Match(query, word.Word) {
-			results = append(results, word)
+		score := fuzzy.RankMatchNormalizedFold(query, word.Word)
+
+		if score != -1 {
+			score = max(16-score, 0) * 100
+		} else {
+			score = 0
 		}
+
+		if d := fuzzy.RankMatchNormalizedFold(query, word.Translations["en"].Definition); d != -1 {
+			score += max(16-d, 0) * 10
+		}
+
+		kuScore := 0
+		for ku := range word.KuData {
+			if k := fuzzy.RankMatchNormalizedFold(query, ku); k != -1 {
+				kuScore = max(kuScore, 10-k, 0)
+			}
+		}
+		kuScore *= 10
+
+		score += kuScore
+
+		if score > 0 {
+			scores = append(scores, wordScore{word: &word, score: score})
+		}
+
+		fmt.Println("word:", word.Word, "score:", score, "kuScore:", kuScore)
+	}
+
+	slices.SortFunc(scores, func(a, b wordScore) int {
+		if a.score == b.score {
+			return defaultSort(*a.word, *b.word)
+		}
+
+		return b.score - a.score
+	})
+
+	results := make([]models.WordData, 0, len(scores))
+	for _, score := range scores {
+		results = append(results, *score.word)
 	}
 
 	return results

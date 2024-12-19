@@ -9,12 +9,19 @@ h1 {
 	margin-top: 1rem;
 }
 
-input {
+.intro {
+	margin: 0.5rem 0;
+	font-size: 0.875rem;
+}
+
+input[type="search"] {
 	width: 100%;
 	padding: 0.5rem;
 	font-size: 1rem;
 	display: block;
 	margin: 1rem 0;
+	border-radius: 0;
+	border: 1px solid gray;
 }
 
 .results {
@@ -37,6 +44,8 @@ input {
 .word {
 	border: 1px solid gray;
 	padding: 0.5rem;
+	color: inherit;
+	text-decoration: none;
 
 	& > h2 {
 		margin: 0;

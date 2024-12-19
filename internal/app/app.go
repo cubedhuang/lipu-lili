@@ -4,12 +4,16 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"os"
+	"path/filepath"
 	"slices"
 	"sync"
 	"time"
 
 	"github.com/cubedhuang/lipu-lili/internal/client"
 	"github.com/cubedhuang/lipu-lili/internal/models"
+	"github.com/tdewolff/minify/v2"
+	"github.com/tdewolff/minify/v2/html"
 )
 
 type WordsStore struct {
@@ -31,7 +35,7 @@ func New(config *Config) (*App, error) {
 		},
 	}
 
-	tmpl, err := template.New("base").Funcs(funcMap).ParseGlob(config.TemplatesPath)
+	tmpl, err := compileTemplates(config.TemplatesPath, funcMap)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse templates: %w", err)
 	}
@@ -87,4 +91,35 @@ func (app *App) startUpdater() {
 			}
 		}
 	}()
+}
+
+func compileTemplates(path string, funcMap template.FuncMap) (*template.Template, error) {
+	m := minify.New()
+	m.AddFunc("text/html", html.Minify)
+
+	tmpl := template.New("").Funcs(funcMap)
+
+	files, err := filepath.Glob(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find templates: %w", err)
+	}
+
+	for _, filename := range files {
+		b, err := os.ReadFile(filename)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read file %s: %w", filename, err)
+		}
+
+		mb, err := m.Bytes("text/html", b)
+		if err != nil {
+			return nil, fmt.Errorf("failed to minify file %s: %w", filename, err)
+		}
+
+		tmpl, err = tmpl.Parse(string(mb))
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse template %s: %w", filename, err)
+		}
+	}
+
+	return tmpl, nil
 }

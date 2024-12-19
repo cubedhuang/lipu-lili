@@ -11,24 +11,32 @@
 			<link rel="stylesheet" href="/static/reset.css" />
 			<link rel="stylesheet" href="/static/style.css" />
 			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+			<script>
+				let lastSearch = "";
+			</script>
 		</head>
 
 		<body>
 			<h1>Toki Pona Dictionary</h1>
+			<p class="intro">
+				Search in English or Toki Pona. Click on a word to view more.
+			</p>
 			<input
 				type="search"
 				id="input"
 				name="q"
 				placeholder="o alasa..."
 				hx-post="/search"
-				hx-trigger="input changed delay:100ms, keyup[key=='Enter']"
+				hx-trigger="input changed delay:150ms, keyup[key=='Enter']"
 				hx-target="#results"
-				hx-swap="outerHTML"
-				hx-on:input="document.getElementById('results').classList.add('loading')"
+				hx-on:input="if (this.value !== lastSearch) {lastSearch = this.value; document.getElementById('results').classList.add('loading')}"
 				hx-on::after-request="document.getElementById('results').classList.remove('loading')"
 			/>
 
-			{{- template "results" . -}}
+			<div id="results">
+				{{ template "results" . }}
+			</div>
 		</body>
 	</html>
 {{ end }}
