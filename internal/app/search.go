@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 
@@ -58,8 +57,6 @@ func (data *WordsStore) search(query string) []models.WordData {
 		if score > 0 {
 			scores = append(scores, wordScore{word: &word, score: score})
 		}
-
-		fmt.Println("word:", word.Word, "score:", score, "kuScore:", kuScore)
 	}
 
 	slices.SortFunc(scores, func(a, b wordScore) int {
