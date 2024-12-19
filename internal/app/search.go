@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/cubedhuang/lipu-lili/internal/models"
+	"github.com/lithammer/fuzzysearch/fuzzy"
 )
 
 func defaultSort(a, b models.WordData) int {
@@ -20,7 +21,8 @@ func (data *WordsStore) search(query string) []models.WordData {
 
 	results := make([]models.WordData, 0, len(data.words))
 	for _, word := range data.words {
-		if strings.Contains(word.Word, query) {
+		// if strings.Contains(word.Word, query) {
+		if fuzzy.Match(query, word.Word) {
 			results = append(results, word)
 		}
 	}
