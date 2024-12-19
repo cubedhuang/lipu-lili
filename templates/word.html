@@ -14,26 +14,169 @@
 		</head>
 
 		<body>
+			{{ $translation := .Translations.en }}
 			<h1>{{ .Word }}</h1>
 
 			<p class="intro">
 				<a href="/">home</a>
 			</p>
 
-			<p class="meta">
-				{{ .UsageCategory }} &middot;
-				{{ formatUsage .Usage }}
-				&middot;
-				{{ .Book }}
-				{{ if .CoinedYear }}
-					&middot;
-					{{ .CoinedYear }}
-				{{ end }}
-			</p>
+			<div class="word-info">
+				<dl>
+					<dt>meaning</dt>
+					<dd>{{ $translation.Definition }}</dd>
 
-			<p>
-				{{ .Translations.en.Definition }}
-			</p>
+					{{ if len .SeeAlso | ne 0 }}
+						<dt>see also</dt>
+						<dd>
+							{{ range .SeeAlso }}
+								<a href="/{{ . }}">{{ . }}</a>
+							{{ end }}
+						</dd>
+					{{ end }}
+
+					{{ if .KuData }}
+						<dt>ku translations</dt>
+						<dd>
+							{{ range $word, $count := .KuData }}
+								{{ $word }}<sup>{{ $count }}</sup>
+							{{ end }}
+						</dd>
+					{{ end }}
+
+					{{ if .PuVerbatim }}
+						<dt>pu verbatim</dt>
+						{{ range processPuData .PuVerbatim }}
+							<dd>
+								<small>{{ .PartOfSpeech }}</small>
+								{{ .Definition }}
+							</dd>
+						{{ end }}
+					{{ end }}
+				</dl>
+
+				<dl>
+					<dt>usage</dt>
+					<dd>
+						{{ .UsageCategory }} &middot;
+						{{ formatUsage .Usage }}
+					</dd>
+
+					<dt>book</dt>
+					<dd>{{ .Book }}</dd>
+					{{ if .CoinedEra }}
+						<dt>coined</dt>
+						<dd>
+							{{ .CoinedEra }}
+							{{ if .CoinedYear }}
+								&middot;
+								{{ .CoinedYear }}
+							{{ end }}
+						</dd>
+					{{ end }}
+					<dt>origin</dt>
+					{{ with processEtymologyData . }}
+						{{ if .Source }}
+							<dd>
+								<i>{{ .Source }}</i>
+							</dd>
+						{{ end }}
+
+						{{ range .Entries }}
+							<dd>
+								{{ .Language }}
+								{{ if .Word }}
+									&middot;
+									{{ .Word }}
+									{{ if .Alt }}
+										{{ .Alt }}
+									{{ end }}
+									{{ if .Definition | and (ne .Definition .Word) }}
+										&lsquo;{{ .Definition }}&rsquo;
+									{{ end }}
+								{{ end }}
+							</dd>
+						{{ end }}
+					{{ end }}
+					{{ if .Creator }}
+						<dd>
+							coined by
+							<i>
+								{{ join .Creator ", " }}
+							</i>
+						</dd>
+					{{ end }}
+					{{ if .AuthorVerbatim }}
+						<dt>author verbatim</dt>
+						{{ if .AuthorVerbatimSource }}
+							<dd>
+								<a
+									href="{{ .AuthorVerbatimSource }}"
+									target="_blank"
+									rel="noopener noreferrer"
+									>source</a
+								>
+							</dd>
+						{{ end }}
+						<dd class="pre-wrap">
+							{{ .AuthorVerbatim }}
+						</dd>
+					{{ end }}
+					{{ if $translation.Commentary }}
+						<dt>commentary</dt>
+						<dd class="pre-wrap">
+							{{ $translation.Commentary }}
+						</dd>
+					{{ end }}
+				</dl>
+
+				{{ if .Representations | and (.Representations.Ligatures | or .Representations.Ucsur) }}
+					<dl>
+						{{ if .Representations.Ligatures }}
+							<dt>sitelen pona</dt>
+							<dd class="pona big">
+								{{ join .Representations.Ligatures " " }}
+							</dd>
+							{{ if $translation.SpEtymology }}
+								<dd>
+									{{ $translation.SpEtymology }}
+								</dd>
+							{{ end }}
+						{{ end }}
+						{{ if .Representations.SitelenSitelen }}
+							<dt>sitelen sitelen</dt>
+							<dd>
+								<img
+									src="https://nimi.li/api/ss?word={{ .Word }}"
+									alt="{{ .Word }} sitelen sitelen"
+									class="ss"
+								/>
+							</dd>
+						{{ end }}
+						{{ if .Representations.SitelenJelo }}
+							<dt>sitelen jelo</dt>
+							<dd class="big">
+								{{ join .Representations.SitelenJelo "" }}
+							</dd>
+						{{ end }}
+						{{ if .Representations.SitelenEmosi }}
+							<dt>sitelen Emosi</dt>
+							<dd class="big">
+								{{ .Representations.SitelenEmosi }}
+							</dd>
+						{{ end }}
+						{{ if .Representations.Ucsur }}
+							<dt>ucsur</dt>
+							<dd class="big ucsur">
+								{{ fromCodePoint .Representations.Ucsur }}
+							</dd>
+							<dd>
+								{{ .Representations.Ucsur }}
+							</dd>
+						{{ end }}
+					</dl>
+				{{ end }}
+			</div>
 		</body>
 	</html>
 {{ end }}

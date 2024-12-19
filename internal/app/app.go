@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -30,8 +32,57 @@ type App struct {
 
 func New(config *Config) (*App, error) {
 	funcMap := template.FuncMap{
+		"join": strings.Join,
 		"formatUsage": func(usage map[string]int) string {
-			return fmt.Sprint(usage["2024-09"], "%")
+			val, ok := usage["2024-09"]
+			if !ok {
+				return "unknown"
+			}
+			return fmt.Sprint(val, "%")
+		},
+		"processPuData": func(data models.PuVerbatim) []models.PuData {
+			puData := make([]models.PuData, 0)
+
+			lines := strings.Split(data.En, "\n")
+			for _, line := range lines {
+				parts := strings.SplitN(line, " ", 2)
+				puData = append(puData, models.PuData{
+					PartOfSpeech: parts[0],
+					Definition:   parts[1],
+				})
+			}
+
+			return puData
+		},
+		"processEtymologyData": func(word models.WordData) models.EtymologyData {
+			data := models.EtymologyData{
+				Source:  "",
+				Entries: make([]models.EtymologyEntry, 0, len(word.Etymology)),
+			}
+
+			if strings.HasPrefix(word.SourceLanguage, "multiple") || strings.HasPrefix(word.SourceLanguage, "unknown") {
+				data.Source = word.SourceLanguage
+			}
+
+			for i, entry := range word.Etymology {
+				data.Entries = append(data.Entries, models.EtymologyEntry{
+					Word:       entry.Word,
+					Alt:        entry.Alt,
+					Definition: word.Translations["en"].Etymology[i].Definition,
+					Language:   word.Translations["en"].Etymology[i].Language,
+				})
+			}
+
+			return data
+		},
+		"fromCodePoint": func(ucsur string) string {
+			// e.g. U+F1900
+			codePoint := strings.TrimPrefix(ucsur, "U+")
+			code, err := strconv.ParseInt(codePoint, 16, 32)
+			if err != nil {
+				return ""
+			}
+			return string(rune(code))
 		},
 	}
 

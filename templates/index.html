@@ -24,13 +24,15 @@
 			</p>
 			<input
 				type="search"
+				autofocus
 				id="input"
 				name="q"
 				placeholder="o alasa..."
 				hx-post="/search"
-				hx-trigger="input changed delay:150ms, keyup[key=='Enter']"
+				hx-trigger="input changed delay:150ms, keyup[key=='Enter'], search, load delay:50ms"
 				hx-target="#results"
-				hx-on:input="if (this.value !== lastSearch) {lastSearch = this.value; document.getElementById('results').classList.add('loading')}"
+				oninput="if (this.value !== lastSearch) { lastSearch = this.value; document.getElementById('results').classList.add('loading') }"
+				onsearch="if (this.value !== lastSearch) { lastSearch = this.value; document.getElementById('results').classList.add('loading') }"
 				hx-on::after-request="document.getElementById('results').classList.remove('loading')"
 			/>
 
