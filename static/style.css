@@ -1,3 +1,14 @@
+:root {
+	--muted: #666666;
+	--border: #ccc;
+}
+
+* {
+	border-color: var(--border);
+	border-style: solid;
+	border-width: 0;
+}
+
 body {
 	margin: 1rem auto;
 	padding: 0.5rem;
@@ -20,7 +31,13 @@ input[type="search"] {
 	display: block;
 	margin: 1rem 0;
 	border-radius: 0;
-	border: 1px solid gray;
+	border-width: 1px;
+	background-color: inherit;
+}
+
+input[type="search"]:focus {
+	outline-offset: 4px;
+	outline-width: 1px;
 }
 
 .results {
@@ -39,13 +56,13 @@ input[type="search"] {
 	}
 
 	& > :last-child {
-		color: gray;
+		color: var(--muted);
 		font-size: 0.75rem;
 	}
 }
 
 .word {
-	border: 1px solid gray;
+	border-width: 1px;
 	padding: 0.5rem;
 	color: inherit;
 	text-decoration: none;
@@ -56,7 +73,7 @@ input[type="search"] {
 	}
 
 	& > .meta {
-		color: gray;
+		color: var(--muted);
 		font-size: 0.75rem;
 	}
 
@@ -73,7 +90,7 @@ input[type="search"] {
 
 	& > * {
 		margin: 0;
-		border: 1px solid gray;
+		border-width: 1px;
 		padding: 0.5rem;
 	}
 
@@ -98,13 +115,13 @@ input[type="search"] {
 	& video {
 		width: 12rem;
 		max-width: 100%;
-		border: 1px solid gray;
+		border-width: 1px;
 	}
 }
 
 small {
 	font-size: 0.75rem;
-	color: gray;
+	color: var(--muted);
 }
 
 .pre-wrap {
