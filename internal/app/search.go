@@ -25,8 +25,12 @@ func (data *WordsStore) search(query string) []models.WordData {
 	data.mu.RLock()
 	defer data.mu.RUnlock()
 
-	if query == "" {
+	query = strings.TrimSpace(query)
+
+	if l := len(query); l == 0 {
 		return data.words
+	} else if l > 32 {
+		query = query[:32]
 	}
 
 	scores := make([]wordScore, 0, len(data.words))

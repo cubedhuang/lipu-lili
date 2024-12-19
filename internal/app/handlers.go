@@ -64,9 +64,6 @@ func (app *App) search(w http.ResponseWriter, r *http.Request) {
 		app.tmpl.ExecuteTemplate(w, "results", app.data.words)
 		return
 	}
-	if len(query) > 32 {
-		query = query[:32]
-	}
 
 	if err := app.tmpl.ExecuteTemplate(w, "results", app.data.search(query)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
