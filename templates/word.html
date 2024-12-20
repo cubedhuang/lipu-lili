@@ -82,21 +82,26 @@
 							<dt>audio</dt>
 							{{ range .Audio }}
 								<dd>
-									<audio id="{{ .Author }}">
-										<source src="{{ .Link }}" />
-										<a href="{{ .Link }}">view</a>
-									</audio>
-
 									<button
 										onclick="document.getElementById('{{ .Author }}').play()"
 										aria-label="play audio"
 									>
 										&#9205;
 									</button>
-
 									{{ .Author }}
+									<audio id="{{ .Author }}" controls>
+										<source src="{{ .Link }}" />
+										<a href="{{ .Link }}">view</a>
+									</audio>
 								</dd>
 							{{ end }}
+							<script>
+								for (const a of document.getElementsByTagName(
+									"audio",
+								)) {
+									a.controls = false;
+								}
+							</script>
 						{{ end }}
 					</dl>
 
