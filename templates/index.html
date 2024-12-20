@@ -10,11 +10,10 @@
 			<title>lipu nimi lili</title>
 			<link rel="stylesheet" href="/static/reset.css" />
 			<link rel="stylesheet" href="/static/style.css" />
-			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
-
 			<script>
 				let lastSearch = "";
 			</script>
+			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
 		</head>
 
 		<body>
@@ -29,23 +28,30 @@
 					>GitHub</a
 				>.
 			</p>
-			<input
-				type="search"
-				autofocus
-				autocomplete="off"
-				id="input"
-				name="q"
-				placeholder="o alasa..."
-				hx-post="/search"
-				hx-trigger="input changed delay:150ms, keyup[key=='Enter'], search, load delay:50ms"
+			<form
+				action="/"
+				hx-post="/"
+				hx-trigger="submit changed"
 				hx-target="#results"
-				oninput="if (this.value !== lastSearch) { lastSearch = this.value; document.getElementById('results').classList.add('loading') }"
-				onsearch="if (this.value !== lastSearch) { lastSearch = this.value; document.getElementById('results').classList.add('loading') }"
-				hx-on::after-request="document.getElementById('results').classList.remove('loading')"
-			/>
+			>
+				<input
+					type="search"
+					value="{{ .Query }}"
+					autocomplete="off"
+					id="input"
+					name="q"
+					placeholder="o alasa..."
+					hx-post="/"
+					hx-trigger="input changed delay:150ms, load delay:50ms"
+					hx-target="#results"
+					oninput="if (this.value !== lastSearch) { lastSearch = this.value; document.getElementById('results').classList.add('loading') }"
+					onsearch="if (this.value !== lastSearch) { lastSearch = this.value; document.getElementById('results').classList.add('loading') }"
+					hx-on::after-request="document.getElementById('results').classList.remove('loading')"
+				/>
+			</form>
 
 			<div id="results">
-				{{ template "results" . }}
+				{{ template "results" .Results }}
 			</div>
 		</body>
 	</html>

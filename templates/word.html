@@ -26,7 +26,7 @@
 						<dt>meaning</dt>
 						<dd>{{ $translation.Definition }}</dd>
 
-						{{ if len .SeeAlso | ne 0 }}
+						{{ if .SeeAlso }}
 							<dt>see also</dt>
 							<dd>
 								{{ range .SeeAlso }}

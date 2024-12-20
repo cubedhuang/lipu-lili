@@ -1,21 +1,22 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"log"
+	"net/http"
 	"os"
-	"path/filepath"
+	"os/signal"
 	"slices"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/cubedhuang/lipu-lili/internal/client"
 	"github.com/cubedhuang/lipu-lili/internal/models"
-	"github.com/tdewolff/minify/v2"
-	"github.com/tdewolff/minify/v2/html"
 )
 
 type WordsStore struct {
@@ -104,8 +105,45 @@ func (app *App) Run() error {
 		return fmt.Errorf("failed to fetch initial data: %w", err)
 	}
 
-	app.startUpdater()
-	return app.handle()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	app.startUpdater(ctx)
+	mux := app.createHandlers()
+
+	server := &http.Server{
+		Addr:         ":" + app.config.Port,
+		Handler:      mux,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+
+	errors := make(chan error, 1)
+
+	go func() {
+		errors <- server.ListenAndServe()
+	}()
+
+	select {
+	case err := <-errors:
+		return fmt.Errorf("server error: %w", err)
+	case <-shutdown:
+		log.Println("Shutting down server...")
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := server.Shutdown(ctx); err != nil {
+			return fmt.Errorf("failed to shutdown server: %w", err)
+		}
+
+		log.Println("Server gracefully stopped")
+		return nil
+	}
 }
 
 func (app *App) updateData() error {
@@ -151,48 +189,21 @@ func (app *App) updateData() error {
 	return nil
 }
 
-func (app *App) startUpdater() {
+func (app *App) startUpdater(ctx context.Context) {
 	ticker := time.NewTicker(10 * time.Minute)
-	defer ticker.Stop()
 
 	go func() {
-		for range ticker.C {
-			if err := app.updateData(); err != nil {
-				log.Printf("Failed to update data: %v", err)
-			} else {
-				log.Printf("Data updated at %v", time.Now())
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if err := app.updateData(); err != nil {
+					log.Printf("Failed to update data: %v", err)
+				}
 			}
 		}
 	}()
-}
-
-func compileTemplates(path string, funcMap template.FuncMap) (*template.Template, error) {
-	m := minify.New()
-	m.AddFunc("text/html", html.Minify)
-
-	tmpl := template.New("").Funcs(funcMap)
-
-	files, err := filepath.Glob(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find templates: %w", err)
-	}
-
-	for _, filename := range files {
-		b, err := os.ReadFile(filename)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read file %s: %w", filename, err)
-		}
-
-		mb, err := m.Bytes("text/html", b)
-		if err != nil {
-			return nil, fmt.Errorf("failed to minify file %s: %w", filename, err)
-		}
-
-		tmpl, err = tmpl.Parse(string(mb))
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse template %s: %w", filename, err)
-		}
-	}
-
-	return tmpl, nil
 }

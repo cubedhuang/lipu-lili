@@ -1,31 +1,25 @@
 package app
 
 import (
-	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/cubedhuang/lipu-lili/internal/models"
 )
 
-func (app *App) handle() error {
+func (app *App) createHandlers() *http.ServeMux {
 	mux := http.NewServeMux()
 	fs := http.FileServer(http.Dir(app.config.StaticPath))
 
 	mux.HandleFunc("/", app.index)
 	mux.HandleFunc("/{id}", app.word)
-	mux.HandleFunc("/search", app.search)
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	server := &http.Server{
-		Addr:         ":" + app.config.Port,
-		Handler:      mux,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
-	}
+	return mux
+}
 
-	return server.ListenAndServe()
+type IndexPage struct {
+	Query   string
+	Results []models.WordData
 }
 
 func (app *App) index(w http.ResponseWriter, r *http.Request) {
@@ -34,9 +28,24 @@ func (app *App) index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := app.tmpl.ExecuteTemplate(w, "index", app.data.words)
+	query := ""
+	if err := r.ParseForm(); err == nil {
+		query = r.FormValue("q")
+	}
 
-	if err != nil {
+	results := app.data.search(query)
+
+	if r.Header.Get("Hx-Request") == "true" {
+		if err := app.tmpl.ExecuteTemplate(w, "results", results); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	if err := app.tmpl.ExecuteTemplate(w, "index", IndexPage{
+		Query:   query,
+		Results: results,
+	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -59,23 +68,6 @@ func (app *App) word(w http.ResponseWriter, r *http.Request) {
 		Word:  word,
 		Signs: app.data.signs[id],
 	}); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func (app *App) search(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, fmt.Errorf("error parsing form: %w", err).Error(), http.StatusInternalServerError)
-		return
-	}
-
-	query := r.FormValue("q")
-	if query == "" {
-		app.tmpl.ExecuteTemplate(w, "results", app.data.words)
-		return
-	}
-
-	if err := app.tmpl.ExecuteTemplate(w, "results", app.data.search(query)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

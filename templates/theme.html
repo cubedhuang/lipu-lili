@@ -1,0 +1,16 @@
+{{ define "theme" }}
+	<script>
+		const theme = localStorage.getItem("lili:theme") || "system";
+		const isDark = (theme) =>
+			theme === "dark" ||
+			(theme === "system" &&
+				window.matchMedia("(prefers-color-scheme: dark)").matches);
+		if (isDark(theme)) {
+			document.documentElement.classList.add("dark");
+		}
+		function setTheme(newTheme) {
+			localStorage.setItem("lili:theme", newTheme);
+			document.documentElement.classList.toggle("dark", isDark(newTheme));
+		}
+	</script>
+{{ end }}

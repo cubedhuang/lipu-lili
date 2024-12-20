@@ -1,18 +1,47 @@
 :root {
-	--muted: #666666;
-	--border: #ccc;
+	--text: #111827;
+	--muted: #6b7280;
+	--border: #d1d5db;
+	--background: #f9fafb;
+	--card: #ffffff;
+	--outline: #9ca3af;
+	color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--text: #f3f4f6;
+		--muted: #9ca3af;
+		--border: #374151;
+		--background: #111827;
+		--card: #1f2937;
+		--outline: #60a5fa;
+		color-scheme: dark;
+
+		& .ss {
+			filter: invert(1);
+		}
+	}
 }
 
 * {
 	border-color: var(--border);
 	border-style: solid;
 	border-width: 0;
+	outline-offset: 4px !important;
+	outline-color: var(--outline);
+}
+
+html {
+	scrollbar-gutter: stable;
 }
 
 body {
 	margin: 1rem auto;
 	padding: 0.5rem;
 	max-width: 80ch;
+	background-color: var(--background);
+	color: var(--text);
 }
 
 h1 {
@@ -32,11 +61,10 @@ input[type="search"] {
 	margin: 1rem 0;
 	border-radius: 0;
 	border-width: 1px;
-	background-color: inherit;
+	background-color: var(--card);
 }
 
 input[type="search"]:focus {
-	outline-offset: 4px;
 	outline-width: 1px;
 }
 
@@ -66,6 +94,7 @@ input[type="search"]:focus {
 	padding: 0.5rem;
 	color: inherit;
 	text-decoration: none;
+	background-color: var(--card);
 
 	& > h2 {
 		margin: 0;
@@ -92,6 +121,7 @@ input[type="search"]:focus {
 		margin: 0;
 		border-width: 1px;
 		padding: 0.5rem;
+		background-color: var(--card);
 	}
 
 	& dl {
@@ -110,6 +140,12 @@ input[type="search"]:focus {
 
 	& dd + dt {
 		margin-top: 0.25rem;
+	}
+
+	& button {
+		border-width: 1px;
+		padding: 0 0.5rem;
+		cursor: pointer;
 	}
 
 	& video {
