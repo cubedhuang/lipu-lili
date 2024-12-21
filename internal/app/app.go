@@ -42,6 +42,18 @@ func New(config *Config) (*App, error) {
 			}
 			return fmt.Sprint(val, "%")
 		},
+		"wordTitle": func(word string) string {
+			return word + " – Toki Pona Dictionary"
+		},
+		"wordImage": func(word models.WordData) string {
+			if len(word.Representations.Ligatures) == 0 {
+				return ""
+			}
+			return "https://raw.githubusercontent.com/lipu-linku/ijo/main/sitelenpona/sitelen-seli-kiwen/" + word.Representations.Ligatures[0] + ".png"
+		},
+		"wordUrl": func(word string) string {
+			return "https://lili.nimi.li/" + word
+		},
 		"processPuData": func(data models.WordPuVerbatim) []models.PuData {
 			puData := make([]models.PuData, 0)
 
