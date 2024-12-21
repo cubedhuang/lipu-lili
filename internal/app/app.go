@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	texttemplate "text/template"
 	"time"
 
 	"github.com/cubedhuang/lipu-lili/internal/client"
@@ -27,17 +28,18 @@ type WordsStore struct {
 }
 
 type App struct {
-	config *Config
-	tmpl   *template.Template
-	data   *WordsStore
+	config      *Config
+	tmpl        *template.Template
+	sitemapTmpl *texttemplate.Template
+	data        *WordsStore
 }
 
 func New(config *Config) (*App, error) {
 	funcMap := template.FuncMap{
 		"join": strings.Join,
-		"formatUsage": func(usage map[string]int) string {
-			val, ok := usage["2024-09"]
-			if !ok {
+		"formatUsage": func(word models.WordData) string {
+			val := word.GetUsage()
+			if val == -1 {
 				return "unknown"
 			}
 			return fmt.Sprint(val, "%")
@@ -105,10 +107,16 @@ func New(config *Config) (*App, error) {
 		return nil, fmt.Errorf("failed to parse templates: %w", err)
 	}
 
+	sitemapTmpl, err := compileSiteMapTemplate()
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse sitemap template: %w", err)
+	}
+
 	return &App{
-		config: config,
-		tmpl:   tmpl,
-		data:   &WordsStore{},
+		config:      config,
+		tmpl:        tmpl,
+		sitemapTmpl: sitemapTmpl,
+		data:        &WordsStore{},
 	}, nil
 }
 

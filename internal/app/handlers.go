@@ -12,6 +12,7 @@ func (app *App) createHandlers() *http.ServeMux {
 
 	mux.HandleFunc("/", app.index)
 	mux.HandleFunc("/{id}", app.word)
+	mux.HandleFunc("/sitemap.xml", app.sitemap)
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	return mux
@@ -34,6 +35,9 @@ func (app *App) index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	results := app.data.search(query)
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "s-maxage=600")
 
 	if r.Header.Get("Hx-Request") == "true" {
 		if err := app.tmpl.ExecuteTemplate(w, "results", results); err != nil {
@@ -64,10 +68,22 @@ func (app *App) word(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "s-maxage=600")
+
 	if err := app.tmpl.ExecuteTemplate(w, "word", WordPage{
 		Word:  word,
 		Signs: app.data.signs[id],
 	}); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (app *App) sitemap(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+	w.Header().Set("Cache-Control", "s-maxage=600")
+
+	if err := app.sitemapTmpl.Execute(w, app.data.words); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

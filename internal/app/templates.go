@@ -6,7 +6,9 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	texttemplate "text/template"
 
+	"github.com/cubedhuang/lipu-lili/internal/models"
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/css"
 	"github.com/tdewolff/minify/v2/html"
@@ -47,6 +49,41 @@ func compileTemplates(path string, funcMap template.FuncMap) (*template.Template
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse template %s: %w", filename, err)
 		}
+	}
+
+	return tmpl, nil
+}
+
+const sitemapTmpl = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+	<url>
+		<loc>http://lili.nimi.li/</loc>
+		<changefreq>monthly</changefreq>
+		<priority>1.0</priority>
+	</url>
+{{- range . -}}
+	<url>
+		<loc>http://lili.nimi.li/{{ .Id }}</loc>
+		<changefreq>monthly</changefreq>
+		<priority>{{ pagePriority . }}</priority>
+	</url>
+{{- end -}}
+</urlset>`
+
+func compileSiteMapTemplate() (*texttemplate.Template, error) {
+	tmpl, err := texttemplate.New("sitemap").Funcs(template.FuncMap{
+		"pagePriority": func(word models.WordData) string {
+			usage := word.GetUsage()
+			if usage == -1 {
+				return "0.0"
+			}
+			priority := float64(usage) / 100
+			return fmt.Sprintf("%.2f", priority)
+		},
+	}).Parse(sitemapTmpl)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse sitemap template: %w", err)
 	}
 
 	return tmpl, nil

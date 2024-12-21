@@ -32,7 +32,7 @@ func LoadConfig() (*Config, error) {
 	return &Config{
 		Port:           port,
 		UpdateInterval: updateInterval,
-		TemplatesPath:  "templates/*.html",
+		TemplatesPath:  "templates/*",
 		StaticPath:     "static",
 	}, nil
 }

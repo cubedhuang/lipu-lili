@@ -64,3 +64,11 @@ type WordData struct {
 	Usage                map[string]int             `json:"usage"`
 	Translations         map[string]WordTranslation `json:"translations"`
 }
+
+func (w WordData) GetUsage() int {
+	val, ok := w.Usage["2024-09"]
+	if !ok {
+		return -1
+	}
+	return val
+}
